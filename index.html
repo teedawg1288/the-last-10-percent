@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Last 10%</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#17191d}
+header{background:#111827;color:white;padding:22px 18px}
+header h1{margin:0;font-size:26px}
+header p{margin:6px 0 0;color:#cbd5e1}
+nav{display:flex;overflow-x:auto;background:white;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:5}
+nav button{border:0;background:white;padding:16px 18px;font-weight:700;white-space:nowrap}
+nav button.active{border-bottom:3px solid #111827}
+main{max-width:850px;margin:auto;padding:18px}
+.card{background:white;border:1px solid #e1e4e8;border-radius:14px;padding:18px;margin-bottom:16px}
+h2{margin-top:0}
+h3{margin-bottom:8px}
+label{display:block;font-weight:700;margin:14px 0 6px}
+textarea,input,select{width:100%;padding:12px;border:1px solid #c8ccd2;border-radius:9px;font-size:16px;background:white}
+textarea{min-height:100px;resize:vertical}
+button.primary{background:#111827;color:white;border:0;border-radius:9px;padding:13px 18px;font-size:16px;font-weight:700;margin-top:14px}
+button.secondary{background:white;border:1px solid #bbb;border-radius:9px;padding:10px 14px;margin-top:10px}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#eef0f3;font-size:12px;font-weight:700}
+.quote{border-left:4px solid #111827;padding:12px 14px;background:#f2f3f5;margin:14px 0}
+.hidden{display:none}
+.frozen{background:#f7f8fa;border:1px dashed #9ca3af;padding:14px;border-radius:9px;white-space:pre-wrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.historyItem{border:1px solid #ddd;border-radius:10px;padding:14px;margin-top:10px}
+small{color:#6b7280}
+.warning{background:#fff7e6;border:1px solid #f0cf85;padding:12px;border-radius:9px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}main{padding:12px}}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>The Last 10%</h1>
+<p>Reality-testing & reasoning engine</p>
+</header>
+
+<nav>
+<button class="tab active" onclick="showPage('analyze',this)">Analyze</button>
+<button class="tab" onclick="showPage('test',this)">Test</button>
+<button class="tab" onclick="showPage('blind',this)">Blind Test</button>
+<button class="tab" onclick="showPage('history',this)">History</button>
+<button class="tab" onclick="showPage('about',this)">About</button>
+</nav>
+
+<main>
+
+<section id="analyze">
+<div class="card">
+<h2>What pattern do you see?</h2>
+<p>Enter the observation, problem, belief, theory or pattern exactly as you currently understand it.</p>
+
+<label>Pattern / Claim</label>
+<textarea id="claim" placeholder="Describe what you see..."></textarea>
+
+<label>Context</label>
+<textarea id="context" placeholder="Optional background information"></textarea>
+
+<button class="primary" onclick="freezeClaim()">Freeze Claim</button>
+</div>
+
+<div id="analysisArea" class="hidden">
+
+<div class="card">
+<span class="badge">FROZEN CLAIM</span>
+<h3>Original statement</h3>
+<div id="frozenClaim" class="frozen"></div>
+<p><small id="timestamp"></small></p>
+<p><b>Status:</b> <span id="status">Untested</span></p>
+</div>
+
+<div class="card">
+<h2>Separate Reality From Interpretation</h2>
+
+<label>Observations — what is directly known?</label>
+<textarea id="observations"></textarea>
+
+<label>Interpretation — what do you think it means?</label>
+<textarea id="interpretation"></textarea>
+
+<label>Assumptions — what must be true?</label>
+<textarea id="assumptions"></textarea>
+
+<label>Unknowns — what information is missing?</label>
+<textarea id="unknowns"></textarea>
+</div>
+
+<div class="card">
+<h2>Where else does this pattern exist?</h2>
+<p>Use another system to generate a hypothesis — not to prove one.</p>
+<textarea id="crossDomain" placeholder="Biology, law, ecology, engineering, traffic, psychology, networks..."></textarea>
+
+<div class="quote">
+Known structure → abstract mechanism → structural match → translated hypothesis → prediction → test
+</div>
+</div>
+
+<button class="primary" onclick="goToTest()">Build Test →</button>
+</div>
+</section>
+
+<section id="test" class="hidden">
+
+<div class="card">
+<h2>Prediction Builder</h2>
+
+<label>Variable being measured</label>
+<input id="variable">
+
+<label>Expected direction/change</label>
+<input id="direction">
+
+<label>Baseline</label>
+<input id="baseline">
+
+<label>Expected result</label>
+<input id="expected">
+
+<label>Timeframe</label>
+<input id="timeframe">
+
+<label>Threshold for success</label>
+<input id="threshold">
+</div>
+
+<div class="card">
+<h2>Falsifier</h2>
+<p>What result would show that your explanation is wrong?</p>
+<textarea id="falsifier"></textarea>
+
+<label>Strongest opposing test</label>
+<textarea id="opposing"></textarea>
+
+<button class="secondary" onclick="weakTest()">No falsifier identified</button>
+<p id="weakLabel"></p>
+</div>
+
+<div class="card">
+<h2>Action Gate</h2>
+
+<label>Is the action reversible?</label>
+<select id="reversible">
+<option>Yes</option><option>No</option><option>Uncertain</option>
+</select>
+
+<label>Will it produce useful information?</label>
+<select id="infoGain">
+<option>Yes</option><option>No</option><option>Uncertain</option>
+</select>
+
+<label>Could it cause serious or irreversible harm?</label>
+<select id="harm">
+<option>No</option><option>Yes</option><option>Uncertain</option>
+</select>
+
+<button class="primary" onclick="actionGate()">Evaluate Action</button>
+
+<h3 id="gateResult"></h3>
+</div>
+
+<div class="card">
+<h2>Reality Check</h2>
+
+<label>What actually happened?</label>
+<textarea id="actualResult"></textarea>
+
+<label>Result</label>
+<select id="resultStatus">
+<option>Supported</option>
+<option>Contradicted</option>
+<option>Mixed</option>
+<option>Inconclusive</option>
+</select>
+
+<label>Did the intervention itself help create the result?</label>
+<select id="interventionCreated">
+<option>No</option>
+<option>Yes</option>
+<option>Uncertain</option>
+</select>
+
+<button class="primary" onclick="saveTest()">Save Test</button>
+</div>
+
+</section>
+
+<section id="blind" class="hidden">
+<div class="card">
+<h2>Blind Test Mode</h2>
+<p>The target should remain hidden until your answers are frozen.</p>
+
+<label>Abstract system description</label>
+<textarea id="blindSystem"></textarea>
+
+<label>1. Mechanism</label>
+<textarea id="blindMechanism"></textarea>
+
+<label>2. Intervention</label>
+<textarea id="blindIntervention"></textarea>
+
+<label>3. Measurable prediction</label>
+<textarea id="blindPrediction"></textarea>
+
+<label>4. Falsifier</label>
+<textarea id="blindFalsifier"></textarea>
+
+<button class="primary" onclick="freezeBlind()">Freeze Answers</button>
+</div>
+
+<div id="blindReveal" class="card hidden">
+<span class="badge">ANSWERS FROZEN</span>
+
+<label>Reveal target domain</label>
+<input id="targetDomain">
+
+<h3>Score</h3>
+
+<label>Mechanism</label>
+<select><option>PASS</option><option>PARTIAL PASS</option><option>FAIL</option><option>TOO VAGUE TO TEST</option><option>NOT PROVIDED</option></select>
+
+<label>Intervention</label>
+<select><option>PASS</option><option>PARTIAL PASS</option><option>FAIL</option><option>TOO VAGUE TO TEST</option><option>NOT PROVIDED</option></select>
+
+<label>Prediction</label>
+<select><option>PASS</option><option>PARTIAL PASS</option><option>FAIL</option><option>TOO VAGUE TO TEST</option><option>NOT PROVIDED</option></select>
+
+<label>Falsifier</label>
+<select><option>PASS</option><option>PARTIAL PASS</option><option>FAIL</option><option>TOO VAGUE TO TEST</option><option>NOT PROVIDED</option></select>
+
+<div class="warning">
+Evaluation criteria cannot change after the target is revealed.
+</div>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="card">
+<h2>Test History</h2>
+<div id="historyList"></div>
+<button class="secondary" onclick="clearHistory()">Clear History</button>
+</div>
+</section>
+
+<section id="about" class="hidden">
+<div class="card">
+<h2>The Last 10%</h2>
+
+<div class="quote">
+Reality gets to change the model. The model doesn't get to change reality to save itself.
+</div>
+
+<p><b>Process:</b></p>
+<p>Observation → Pattern Recognition → Structural Hypothesis → Prediction → Falsifier → Test → Reality Check → Update → Creation / Next Action</p>
+
+<p><b>Operating rule:</b></p>
+<p>Success, failure, contradiction and uncertainty are all information.</p>
+
+<p>Analogies generate hypotheses. Reality tests them.</p>
+
+<p>Unknown does not automatically mean stop. Ask: <b>What can I safely do now that will teach me something?</b></p>
+
+<p><b>Ownership:</b> Own the portion of the system you actually had — and currently have — the capacity to influence.</p>
+</div>
+</section>
+
+</main>
+
+<script>
+let currentTest={};
+
+function showPage(id,btn){
+document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+
+document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+if(btn)btn.classList.add('active');
+
+if(id==='history')renderHistory();
+}
+
+function freezeClaim(){
+let claim=document.getElementById('claim').value.trim();
+
+if(!claim){
+alert('Enter a pattern or claim first.');
+return;
+}
+
+currentTest={
+claim:claim,
+context:document.getElementById('context').value,
+timestamp:new Date().toLocaleString(),
+version:1,
+status:'Untested'
+};
+
+document.getElementById('frozenClaim').textContent=claim;
+document.getElementById('timestamp').textContent=currentTest.timestamp+' • Version 1';
+document.getElementById('analysisArea').classList.remove('hidden');
+}
+
+function goToTest(){
+currentTest.observations=document.getElementById('observations').value;
+currentTest.interpretation=document.getElementById('interpretation').value;
+currentTest.assumptions=document.getElementById('assumptions').value;
+currentTest.unknowns=document.getElementById('unknowns').value;
+currentTest.crossDomain=document.getElementById('crossDomain').value;
+
+showPage('test',document.querySelectorAll('.tab')[1]);
+}
+
+function weakTest(){
+document.getElementById('weakLabel').innerHTML='<span class="badge">WEAKLY TESTABLE</span>';
+}
+
+function actionGate(){
+let reversible=document.getElementById('reversible').value;
+let info=document.getElementById('infoGain').value;
+let harm=document.getElementById('harm').value;
+
+let result;
+
+if(harm==='Yes') result='DO NOT RECOMMEND';
+else if(harm==='Uncertain'||reversible==='No') result='REDUCE RISK FIRST';
+else if(reversible==='Yes'&&info==='Yes'&&harm==='No') result='ACT / TEST NOW';
+else result='REDUCE RISK FIRST';
+
+document.getElementById('gateResult').textContent=result;
+}
+
+function saveTest(){
+if(!currentTest.claim){
+alert('Start by freezing a claim in Analyze.');
+return;
+}
+
+currentTest.prediction={
+variable:document.getElementById('variable').value,
+direction:document.getElementById('direction').value,
+baseline:document.getElementById('baseline').value,
+expected:document.getElementById('expected').value,
+timeframe:document.getElementById('timeframe').value,
+threshold:document.getElementById('threshold').value
+};
+
+currentTest.falsifier=document.getElementById('falsifier').value;
+currentTest.opposing=document.getElementById('opposing').value;
+currentTest.actualResult=document.getElementById('actualResult').value;
+currentTest.status=document.getElementById('resultStatus').value;
+currentTest.interventionCreated=document.getElementById('interventionCreated').value;
+
+let tests=JSON.parse(localStorage.getItem('last10tests')||'[]');
+tests.unshift(JSON.parse(JSON.stringify(currentTest)));
+localStorage.setItem('last10tests',JSON.stringify(tests));
+
+alert('Test saved.');
+showPage('history',document.querySelectorAll('.tab')[3]);
+}
+
+function renderHistory(){
+let tests=JSON.parse(localStorage.getItem('last10tests')||'[]');
+let area=document.getElementById('historyList');
+
+if(!tests.length){
+area.innerHTML='<p>No tests saved yet.</p>';
+return;
+}
+
+area.innerHTML=tests.map((t,i)=>`
+<div class="historyItem">
+<span class="badge">${escapeHtml(t.status||'Untested')}</span>
+<h3>${escapeHtml(t.claim)}</h3>
+<small>${escapeHtml(t.timestamp||'')}</small>
+<p><b>Interpretation:</b> ${escapeHtml(t.interpretation||'—')}</p>
+<p><b>Prediction:</b> ${escapeHtml(t.prediction?.expected||'—')}</p>
+<p><b>Falsifier:</b> ${escapeHtml(t.falsifier||'—')}</p>
+<p><b>Actual result:</b> ${escapeHtml(t.actualResult||'—')}</p>
+<p><b>Intervention created result?</b> ${escapeHtml(t.interventionCreated||'—')}</p>
+</div>
+`).join('');
+}
+
+function clearHistory(){
+if(confirm('Delete all locally saved tests?')){
+localStorage.removeItem('last10tests');
+renderHistory();
+}
+}
+
+function freezeBlind(){
+let required=[
+document.getElementById('blindSystem').value,
+document.getElementById('blindMechanism').value,
+document.getElementById('blindIntervention').value,
+document.getElementById('blindPrediction').value
+];
+
+if(required.some(x=>!x.trim())){
+alert('Complete the system, mechanism, intervention and prediction before freezing.');
+return;
+}
+
+['blindSystem','blindMechanism','blindIntervention','blindPrediction','blindFalsifier']
+.forEach(id=>document.getElementById(id).readOnly=true);
+
+document.getElementById('blindReveal').classList.remove('hidden');
+}
+
+function escapeHtml(value){
+return String(value)
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;')
+.replaceAll('"','&quot;')
+.replaceAll("'","&#039;");
+}
+</script>
+
+</body>
+</html>
